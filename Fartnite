@@ -1,0 +1,939 @@
+	import random
+ 
+def generate_battle_map():
+    """
+    Generates a random 'battle map' for a warfare game.
+    
+    Returns:
+    list: A 10x10 grid of squares representing the battle map
+    """
+    # Initialize the battle map as a 10x10 grid of grasslands
+    battle_map = [['g' for _ in range(10)] for _ in range(10)]
+    
+    # Generate mountains
+    generate_feature(battle_map, 'M', 4)
+    
+    # Generate forests
+    generate_feature(battle_map, 'F', 2)
+    
+    # Generate lakes
+    generate_lakes(battle_map)
+    
+    # Generate hills
+    generate_hills(battle_map)
+    
+    return battle_map
+ 
+def generate_feature(battle_map, feature, min_size):
+    """
+    Generates a specific feature (mountains or forests) on the battle map.
+    
+    Parameters:
+    battle_map (list): The battle map grid
+    feature (str): The feature to generate ('M' for mountains, 'F' for forests)
+    min_size (int): The minimum size of the feature
+    
+    Returns:
+    None
+    """
+    for _ in range(min_size):
+        while True:
+            # Randomly select a starting position
+            row = random.randint(0, 9)
+            col = random.randint(0, 9)
+            
+            # Check if the starting position is valid
+            if battle_map[row][col] == 'g':
+                # Randomly select a direction
+                direction = random.choice(['up', 'down', 'left', 'right'])
+                
+                # Check if the feature can be generated in the selected direction
+                if can_generate_feature(battle_map, feature, row, col, direction, min_size):
+                    # Generate the feature in the selected direction
+                    generate_feature_in_direction(battle_map, feature, row, col, direction, min_size)
+                    break
+ 
+def can_generate_feature(battle_map, feature, row, col, direction, min_size):
+    """
+    Checks if a specific feature can be generated in the given direction from the starting position.
+    
+    Parameters:
+    battle_map (list): The battle map grid
+    feature (str): The feature to generate ('M' for mountains, 'F' for forests)
+    row (int): The starting row position
+    col (int): The starting column position
+    direction (str): The direction to generate the feature ('up', 'down', 'left', 'right')
+    min_size (int): The minimum size of the feature
+    
+    Returns:
+    bool: True if the feature can be generated, False otherwise
+    """
+    # Calculate the maximum row and column indices based on the direction and minimum size
+    if direction == 'up':
+        max_row = row - min_size + 1
+        max_col = col
+    elif direction == 'down':
+        max_row = row + min_size - 1
+        max_col = col
+    elif direction == 'left':
+        max_row = row
+        max_col = col - min_size + 1
+    elif direction == 'right':
+        max_row = row
+        max_col = col + min_size - 1
+    
+    # Check if the maximum indices are within the battle map boundaries
+    if max_row < 0 or max_row >= 10 or max_col < 0 or max_col >= 10:
+        return False
+    
+    # Check if any square in the path already contains the feature
+    for i in range(min_size):
+        if direction == 'up':
+            if battle_map[row - i][col] == feature:
+                return False
+        elif direction == 'down':
+            if battle_map[row + i][col] == feature:
+                return False
+        elif direction == 'left':
+            if battle_map[row][col - i] == feature:
+                return False
+        elif direction == 'right':
+            if battle_map[row][col + i] == feature:
+                return False
+    
+    return True
+ 
+def generate_feature_in_direction(battle_map, feature, row, col, direction, min_size):
+    """
+    Generates a specific feature (mountains or forests) in the given direction from the starting position.
+    
+    Parameters:
+    battle_map (list): The battle map grid
+    feature (str): The feature to generate ('M' for mountains, 'F' for forests)
+    row (int): The starting row position
+    col (int): The starting column position
+    direction (str): The direction to generate the feature ('up', 'down', 'left', 'right')
+    min_size (int): The minimum size of the feature
+    
+    Returns:
+    None
+    """
+    for i in range(min_size):
+        if direction == 'up':
+            battle_map[row - i][col] = feature
+        elif direction == 'down':
+            battle_map[row + i][col] = feature
+        elif direction == 'left':
+            battle_map[row][col - i] = feature
+        elif direction == 'right':
+            battle_map[row][col + i] = feature
+ 
+def generate_lakes(battle_map):
+    """
+    Generates lakes on the battle map.
+    
+    Parameters:
+    battle_map (list): The battle map grid
+    
+    Returns:
+    None
+    """
+    for row in range(10):
+        for col in range(10):
+            if battle_map[row][col] == 'M':
+                # Randomly select a direction
+                direction = random.choice(['up', 'down', 'left', 'right'])
+                
+                # Check if a lake can be generated in the selected direction
+                if can_generate_lake(battle_map, row, col, direction):
+                    # Generate the lake in the selected direction
+                    generate_lake_in_direction(battle_map, row, col, direction)
+ 
+def can_generate_lake(battle_map, row, col, direction):
+    """
+    Checks if a lake can be generated in the given direction from the starting position.
+    
+    Parameters:
+    battle_map (list): The battle map grid
+    row (int): The starting row position
+    col (int): The starting column position
+    direction (str): The direction to generate the lake ('up', 'down', 'left', 'right')
+    
+    Returns:
+    bool: True if the lake can be generated, False otherwise
+    """
+    # Calculate the new row and column indices based on the direction
+    if direction == 'up':
+        new_row = row - 1
+        new_col = col
+    elif direction == 'down':
+        new_row = row + 1
+        new_col = col
+    elif direction == 'left':
+        new_row = row
+        new_col = col - 1
+    elif direction == 'right':
+        new_row = row
+        new_col = col + 1
+    
+    # Check if the new indices are within the battle map boundaries
+    if new_row < 0 or new_row >= 10 or new_col < 0 or new_col >= 10:
+        return False
+    
+    # Check if the new square is a grassland
+    if battle_map[new_row][new_col] == 'g':
+        return True
+    
+    return False
+ 
+def generate_lake_in_direction(battle_map, row, col, direction):
+    """
+    Generates a lake in the given direction from the starting position.
+    
+    Parameters:
+    battle_map (list): The battle map grid
+    row (int): The starting row position
+    col (int): The starting column position
+    direction (str): The direction to generate the lake ('up', 'down', 'left', 'right')
+    
+    Returns:
+    None
+    """
+    # Calculate the new row and column indices based on the direction
+    if direction == 'up':
+        new_row = row - 1
+        new_col = col
+    elif direction == 'down':
+        new_row = row + 1
+        new_col = col
+    elif direction == 'left':
+        new_row = row
+        new_col = col - 1
+    elif direction == 'right':
+        new_row = row
+        new_col = col + 1
+    
+    # Generate the lake
+    battle_map[new_row][new_col] = 'L'
+ 
+def generate_hills(battle_map):
+    """
+    Generates hills on the battle map.
+    
+    Parameters:
+    battle_map (list): The battle map grid
+    
+    Returns:
+    None
+    """
+    for row in range(10):
+        for col in range(10):
+            if battle_map[row][col] == 'g':
+                # Randomly select a probability threshold
+                threshold = random.randint(1, 100)
+                
+                # Check if a hill can be generated based on the probability threshold
+                if threshold <= 10:
+                    # Generate the hill
+                    battle_map[row][col] = 'H'
+ 
+def display_battle_map(battle_map):
+    """
+    Displays the battle map to the user.
+    
+    Parameters:
+    battle_map (list): The battle map grid
+    
+    Returns:
+    None
+    """
+    for row in battle_map:
+        print(' '.join(row))
+ 
+# Generate and display the battle map
+battle_map = generate_battle_map()
+display_battle_map(battle_map)
+	/**
+ * Function to simulate a realistic blood effect when a bullet hits a target
+ * @param {Object} target - The target object that the bullet hits
+ * @param {Object} bullet - The bullet object
+ * @param {Object} blood - The blood object
+ * @returns {Object} - The blood object with updated properties
+ */
+function simulateRealisticBlood(target, bullet, blood) {
+  // Check if the target and bullet objects are valid
+  if (!target || !bullet) {
+    console.error('Target and bullet objects must be provided');
+    return;
+  }
+ 
+  // Calculate the velocity of the bullet
+  const bulletVelocity = Math.sqrt(Math.pow(bullet.velocity.x, 2) + Math.pow(bullet.velocity.y, 2));
+ 
+  // Calculate the distance between the target and bullet
+  const distance = Math.sqrt(Math.pow(target.position.x - bullet.position.x, 2) + Math.pow(target.position.y - bullet.position.y, 2));
+ 
+  // Calculate the force of the bullet
+  const force = bulletVelocity * bullet.mass;
+ 
+  // Calculate the amount of blood to be released
+  const bloodAmount = force * distance;
+ 
+  // Update the blood object with the calculated properties
+  blood.amount = bloodAmount;
+  blood.velocity = bullet.velocity;
+  blood.position = target.position;
+ 
+  return blood;
+}
+class ChatMessage {
+    /**
+     * Constructor for the ChatMessage class.
+     *
+     * @param {string} username - The username of the sender.
+     * @param {string} message - The content of the message.
+     */
+    constructor(username, message) {
+        /** @private */
+        this.username = username;
+ 
+        /** @private */
+        this.message = message;
+ 
+        /** @private */
+        this.timestamp = new Date();
+    }
+ 
+    /**
+     * Getter method to retrieve the username of the sender.
+     *
+     * @returns {string} The username of the sender.
+     */
+    getUsername() {
+        return this.username;
+    }
+ 
+    /**
+     * Getter method to retrieve the content of the message.
+     *
+     * @returns {string} The content of the message.
+     */
+    getMessage() {
+        return this.message;
+    }
+ 
+    /**
+     * Getter method to retrieve the timestamp of the message.
+     *
+     * @returns {Date} The timestamp of the message.
+     */
+    getTimestamp() {
+        return this.timestamp;
+    }
+ 
+    /**
+     * Formats the timestamp of the message to display the hour.
+     *
+     * @returns {string} The formatted hour of the message.
+     */
+    getHour() {
+        const options = { hour: 'numeric', minute: 'numeric' };
+        return this.timestamp.toLocaleTimeString(undefined, options);
+    }
+}
+ 
+class Chat {
+    /**
+     * Constructor for the Chat class.
+     */
+    constructor() {
+        /** @private */
+        this.messages = [];
+    }
+ 
+    /**
+     * Adds a new message to the chat.
+     *
+     * @param {string} username - The username of the sender.
+     * @param {string} message - The content of the message.
+     */
+    addMessage(username, message) {
+        const newMessage = new ChatMessage(username, message);
+        this.messages.push(newMessage);
+    }
+ 
+    /**
+     * Retrieves all the messages in the chat.
+     *
+     * @returns {ChatMessage[]} An array of all the messages in the chat.
+     */
+    getMessages() {
+        return this.messages;
+    }
+ 
+    /**
+     * Retrieves the messages sent by a specific username.
+     *
+     * @param {string} username - The username to filter the messages.
+     * @returns {ChatMessage[]} An array of messages sent by the specified username.
+     */
+    getMessagesByUsername(username) {
+        return this.messages.filter(message => message.getUsername() === username);
+    }
+ 
+    /**
+     * Retrieves the messages sent within a specific hour.
+     *
+     * @param {number} hour - The hour to filter the messages.
+     * @returns {ChatMessage[]} An array of messages sent within the specified hour.
+     */
+    getMessagesByHour(hour) {
+        return this.messages.filter(message => message.getTimestamp().getHours() === hour);
+    }
+}
+ 
+// Usage Example for Chat
+ 
+// Create a new chat
+const chat = new Chat();
+ 
+// Add messages to the chat
+chat.addMessage("Alice", "Hello!");
+chat.addMessage("Bob", "Hi Alice!");
+chat.addMessage("Alice", "How are you?");
+chat.addMessage("Bob", "I'm good, thanks!");
+ 
+// Get all messages in the chat
+const allMessages = chat.getMessages();
+console.log("All Messages:");
+allMessages.forEach(message => {
+    console.log(`${message.getUsername()} (${message.getHour()}): ${message.getMessage()}`);
+});
+ 
+// Get messages sent by a specific username
+const messagesByAlice = chat.getMessagesByUsername("Alice");
+console.log("Messages by Alice:");
+messagesByAlice.forEach(message => {
+    console.log(`${message.getUsername()} (${message.getHour()}): ${message.getMessage()}`);
+});
+ 
+// Get messages sent within a specific hour
+const messagesInHour2 = chat.getMessagesByHour(2);
+console.log("Messages sent within hour 2:");
+messagesInHour2.forEach(message => {
+    console.log(`${message.getUsername()} (${message.getHour()}): ${message.getMessage()}`);
+});
+	using System;
+ 
+namespace GameControls
+{
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            // Example usage of the GameControls function
+            GameControls();
+        }
+ 
+        static void GameControls()
+        {
+            Console.WriteLine("Game Controls:");
+            Console.WriteLine("W - Move Forward");
+            Console.WriteLine("A - Move Left");
+            Console.WriteLine("S - Move Backward");
+            Console.WriteLine("D - Move Right");
+            Console.WriteLine("Space - Jump");
+            Console.WriteLine("Esc - Pause Game");
+             Console.WriteLine("LeftClick - Shoot");
+              Console.WriteLine("Shift - Run");
+ 
+            while (true)
+            {
+                // Read the key input from the user
+                ConsoleKeyInfo keyInfo = Console.ReadKey();
+ 
+                // Check the pressed key and perform the corresponding action
+                switch (keyInfo.Key)
+                {
+                    case ConsoleKey.W:
+                        Console.WriteLine("Moving Forward");
+                        break;
+                    case ConsoleKey.A:
+                        Console.WriteLine("Moving Left");
+                        break;
+                    case ConsoleKey.S:
+                        Console.WriteLine("Moving Backward");
+                        break;
+                    case ConsoleKey.D:
+                        Console.WriteLine("Moving Right");
+                        break;
+                    case ConsoleKey.Spacebar:
+                        Console.WriteLine("Jumping");
+                        break;
+                        case ConsoleKey.LeftClick:
+                        Console.WriteLine("Shoot");
+                        break;
+                        case ConsoleKey.Shift:
+                        Console.WriteLine("Running");
+                        break;
+                    case ConsoleKey.Escape:
+                        Console.WriteLine("Pausing Game");
+                        break;
+                    default:
+                        Console.WriteLine("Invalid Key");
+                        break;
+                }
+            }
+        }
+    }
+}
+	using System;
+ 
+namespace MouseUtils
+{
+    // <summary>
+    // Represents a MouseController that allows the user to look around with the mouse.
+    // The class provides a function to simulate the action of looking around with the mouse.
+    // </summary>
+    public class MouseController
+    {
+        // <summary>
+        // Simulates the action of looking around with the mouse.
+        // </summary>
+        public void LookAround()
+        {
+            // TODO: Implement the code to look around with the mouse.
+            Console.WriteLine("Looking around with the mouse...");
+        }
+    }
+}
+ 
+// Example program for MouseController class.
+ 
+public class Program
+{
+    public static void Main()
+    {
+        var mouseController = new MouseController();
+        mouseController.LookAround();
+    }
+}
+
+/**
+ * This function returns an array of different types of guns.
+ *
+ * @returns {Array} An array of strings representing different types of guns.
+ */
+function getGuns() {
+  return ["Pistol", "Shotgun", "Rifle", "Submachine Gun", "Machine Gun", "Sniper Rifle"];
+}
+inventory();
+	/**
+ * This function takes an array of objects representing players and their kill counts, and returns a leaderboard
+ * sorted by the number of kills in descending order.
+ * 
+ * @param {Array} players - An array of objects representing players and their kill counts. Each object should have a "name" and "kills" property.
+ * @returns {Array} - An array of objects representing the leaderboard, sorted by the number of kills in descending order.
+ */
+function getKillCountLeaderboard(players) {
+  try {
+    // Check if the players argument is an array
+    if (!Array.isArray(players)) {
+      throw new TypeError("The players argument must be an array");
+    }
+    
+    // Check if each player object has a "name" and "kills" property
+    for (let i = 0; i < players.length; i++) {
+      if (!players[i].name || !players[i].kills) {
+        throw new Error(`Player object at index ${i} is missing a "name" or "kills" property`);
+      }
+    }
+    
+    // Sort the players array by the number of kills in descending order
+    players.sort((a, b) => b.kills - a.kills);
+    
+    // Return the sorted array
+    return players;
+  } catch (error) {
+    // Log the error and return an empty array
+    console.error(error);
+    return [];
+  }
+}
+	class AI:
+    """
+    Class representing an AI that can talk and play war games.
+ 
+    Attributes:
+    - name: str
+        The name of the AI.
+ 
+    Methods:
+    - talk(message: str) -> str:
+        Makes the AI talk by returning a response to the given message.
+ 
+    - play_war_game(opponent: str) -> str:
+        Simulates a war game between the AI and an opponent.
+ 
+    """
+ 
+    def __init__(self, name: str):
+        """
+        Constructor to instantiate the AI class.
+ 
+        Parameters:
+        - name: str
+            The name of the AI.
+ 
+        """
+        self.name = name
+ 
+    def talk(self, message: str) -> str:
+        """
+        Makes the AI talk by returning a response to the given message.
+ 
+        Parameters:
+        - message: str
+            The message to which the AI will respond.
+ 
+        Returns:
+        - str:
+            The response from the AI.
+ 
+        """
+        return f"{self.name} says: {message}"
+ 
+    def play_war_game(self, opponent: str) -> str:
+        """
+        Simulates a war game between the AI and an opponent.
+ 
+        Parameters:
+        - opponent: str
+            The name of the opponent.
+ 
+        Returns:
+        - str:
+            The result of the war game.
+ 
+        """
+        return f"{self.name} is playing a war game against {opponent}."
+ 
+ 
+# Example usage of the AI class:
+ 
+# Creating an instance of the AI class
+ai = AI("AI Bot")
+ 
+# Making the AI talk
+message = "Hello, how are you?"
+response = ai.talk(message)
+print(response)
+ 
+# Playing a war game
+opponent = "Player 1"
+result = ai.play_war_game(opponent)
+print(result)
+	PlayerRespawn = {}
+PlayerRespawn.__index = PlayerRespawn
+ 
+-- This function will initialize a new PlayerRespawn object.
+-- @param respawnTime: The time in seconds that the player needs to wait before respawning.
+-- @return: Returns a new PlayerRespawn object.
+function PlayerRespawn.new(respawnTime)
+    local self = setmetatable({}, PlayerRespawn)
+    self.respawnTime = respawnTime
+    self.canRespawn = false
+    return self
+end
+ 
+-- Method to start the respawn countdown.
+function PlayerRespawn:startRespawnCountdown()
+    self.canRespawn = false
+    print("Player died. Respawn countdown started.")
+    -- Wait for the specified respawn time before allowing the player to respawn.
+    wait(self.respawnTime)
+    self.canRespawn = true
+    print("Player can now respawn.")
+end
+ 
+-- Method to check if the player can respawn.
+-- @return: Returns true if the player can respawn, false otherwise.
+function PlayerRespawn:canPlayerRespawn()
+    return self.canRespawn
+end
+ 
+-- Example usage of the PlayerRespawn class
+ 
+-- Usage Example: Initialize a PlayerRespawn object with a respawn time of 5 seconds
+local playerRespawn = PlayerRespawn.new(5)
+ 
+-- Start the respawn countdown
+playerRespawn:startRespawnCountdown()
+ 
+-- Check if the player can respawn
+if playerRespawn:canPlayerRespawn() then
+    print("Player can respawn. Display respawn button.")
+else
+    print("Player cannot respawn yet. Display countdown timer.")
+end
+/**
+ * This function checks if a given FPS is playable on an online server.
+ * 
+ * @param {number} fps - The FPS to check
+ * @param {boolean} isOnline - Whether the server is online or not
+ * @returns {boolean} - Whether the given FPS is playable on the online server or not
+ */
+function isFpsPlayableOnServer(fps, isOnline) {
+  try {
+    // Check if the given FPS is a number
+    if (typeof fps !== 'number') {
+      throw new TypeError('FPS must be a number');
+    }
+ 
+    // Check if the server is online
+    if (!isOnline) {
+      console.log('Server is offline');
+      return false;
+    }
+ 
+    // Check if the FPS is greater than or equal to 30
+    if (fps >= 30) {
+      console.log('FPS is playable on the server');
+      return true;
+    } else {
+      console.log('FPS is not playable on the server');
+      return false;
+    }
+  } catch (error) {
+    console.error(error);
+    return false;
+  }
+}
+	/**
+ * Function to create a FNaF-like perspective shader.
+ *
+ * @param {number} intensity - The intensity of the shader effect.
+ * @returns {string} The shader code.
+ */
+function createFNaFShader(intensity) {
+    // Validate the intensity parameter
+    if (typeof intensity !== 'number' || intensity <= 0) {
+        throw new Error("Intensity must be a positive number.");
+    }
+ 
+    // Calculate the shader code based on the intensity
+    const shaderCode = `
+        // FNaF-like Perspective Shader
+        // Intensity: ${intensity}
+ 
+        // Vertex Shader
+        varying vec2 vUv;
+        void main() {
+            vUv = uv;
+            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }
+ 
+        // Fragment Shader
+        uniform float time;
+        varying vec2 vUv;
+        void main() {
+            vec2 p = -1.0 + 2.0 * vUv;
+            float a = time * 40.0;
+            float d, e, f, g = 1.0 / 40.0 ,h ,i ,r ,q;
+            e = 400.0 * (p.x * 0.5 + 0.5);
+            f = 400.0 * (p.y * 0.5 + 0.5);
+            i = 200.0 + sin(e * g + a / 150.0) * 20.0;
+            d = 200.0 + cos(f * g / 2.0) * 18.0 + cos(e * g) * 7.0;
+            r = sqrt(pow(i - e, 2.0) + pow(d - f, 2.0));
+            q = f / r;
+            e = (r * cos(q)) - a / 2.0;
+            f = (r * sin(q)) - a / 2.0;
+            d = sin(e * g) * 176.0 + sin(e * g) * 164.0 + r;
+            h = ((f + d) + a / 2.0) * g;
+            i = cos(h + r * p.x / 1.3) * (e + e + a) + cos(q * g * 6.0) * (r + h / 3.0);
+            h = sin(f * g) * 144.0 - sin(e * g) * 212.0 * p.x;
+            h = (h + (f - e) * q + sin(r - (a + h) / 7.0) * 10.0 + i / 4.0) * g;
+            i += cos(h * 2.3 * sin(a / 350.0 - q)) * 184.0 * sin(q - (r * 4.3 + a / 12.0) * g) + tan(r * g + h) * 184.0 * cos(r * g + h);
+            i = mod(i / 5.6, 256.0) / 64.0;
+            if (i < 0.0) {
+                i += 4.0;
+            }
+            if (i >= 2.0) {
+                i = 4.0 - i;
+            }
+            d = r / 350.0;
+            d += sin(d * d * 8.0) * 0.52;
+            f = (sin(a * g) + 1.0) / 2.0;
+            gl_FragColor = vec4(vec3(i * i * i * i * d * f * f * f * f), 1.0);
+        }
+    `;
+ 
+    return shaderCode;
+}
+ 
+// Usage Example
+const shaderIntensity = 2.5;
+const fnafShader = createFNaFShader(shaderIntensity);
+console.log(fnafShader);
+=COUNTIFS(A:A, "Team Name", B:B, "Win")   // Total Wins
+=COUNTIFS(A:A, "Team Name", B:B, "Loss")  // Total Losses
+=COUNTIFS(A:A, "Team Name", B:B, "Tie")   // Total Ties
+|   A    |   B   |
+|--------|-------|
+| Team   | Result|
+| Team A | Win   |
+| Team B | Loss  |
+| Team A | Win   |
+| Team A | Tie   |
+| Team B | Win   |
+	#include <iostream>
+#include <vector>
+ 
+/**
+ * @class Soldier
+ * Represents a soldier in the enemy army.
+ */
+class Soldier {
+private:
+    int id;
+    bool isEvil;
+ 
+public:
+    /**
+     * Constructs a Soldier object with the given ID and evil status.
+     *
+     * @param id The ID of the soldier.
+     * @param isEvil Indicates whether the soldier is evil or not.
+     */
+    Soldier(int id, bool isEvil) {
+        this->id = id;
+        this->isEvil = isEvil;
+    }
+ 
+    /**
+     * Returns the ID of the soldier.
+     *
+     * @return int The ID of the soldier.
+     */
+    int getId() const {
+        return id;
+    }
+ 
+    /**
+     * Checks if the soldier is evil.
+     *
+     * @return bool True if the soldier is evil, false otherwise.
+     */
+    bool isEvilSoldier() const {
+        return isEvil;
+    }
+};
+ 
+/**
+ * Attacks the evil soldiers first, followed by the non-evil soldiers.
+ *
+ * @param soldiers The vector of soldiers.
+ */
+void attackSoldiers(std::vector<Soldier>& soldiers) {
+    // Separate the soldiers into two groups: evil and non-evil
+    std::vector<Soldier> evilSoldiers;
+    std::vector<Soldier> nonEvilSoldiers;
+ 
+    for (const auto& soldier : soldiers) {
+        if (soldier.isEvilSoldier()) {
+            evilSoldiers.push_back(soldier);
+        } else {
+            nonEvilSoldiers.push_back(soldier);
+        }
+    }
+ 
+    // Attack the evil soldiers first
+    for (const auto& soldier : evilSoldiers) {
+        std::cout << "Attacking evil soldier with ID: " << soldier.getId() << std::endl;
+        // Perform the attack logic here
+    }
+ 
+    // Attack the non-evil soldiers next
+    for (const auto& soldier : nonEvilSoldiers) {
+        std::cout << "Attacking non-evil soldier with ID: " << soldier.getId() << std::endl;
+        // Perform the attack logic here
+    }
+}
+ 
+int main() {
+    // Create a vector of soldiers
+    std::vector<Soldier> soldiers;
+ 
+    // Add soldiers to the vector
+    soldiers.push_back(Soldier(1, true)); // Evil soldier
+    soldiers.push_back(Soldier(2, false)); // Non-evil soldier
+    soldiers.push_back(Soldier(3, true)); // Evil soldier
+    soldiers.push_back(Soldier(4, false)); // Non-evil soldier
+ 
+    // Attack the soldiers
+    attackSoldiers(soldiers);
+ 
+    return 0;
+}
+	/**
+ * Represents a soldier armed with a weapon.
+ * This class provides utility methods to perform actions related to a soldier.
+ *
+ * @example
+ * const soldier = new Soldier("John", "Rifle");
+ * soldier.attack("enemy"); // Expected Output: "John attacks the enemy with a Rifle."
+ */
+class Soldier {
+    /**
+     * Constructs an instance of the Soldier class.
+     *
+     * @param {string} name - The name of the soldier.
+     * @param {string} weapon - The weapon carried by the soldier.
+     */
+    constructor(name, weapon) {
+        /** @private */
+        this.name = name;
+ 
+        /** @private */
+        this.weapon = weapon;
+    }
+ 
+    /**
+     * Returns the name of the soldier.
+     *
+     * A straightforward getter method that provides access to the name of the soldier.
+     *
+     * @returns {string} The name of the soldier.
+     */
+    getName() {
+        return this.name;
+    }
+ 
+    /**
+     * Returns the weapon carried by the soldier.
+     *
+     * A straightforward getter method that provides access to the weapon carried by the soldier.
+     *
+     * @returns {string} The weapon carried by the soldier.
+     */
+    getWeapon() {
+        return this.weapon;
+    }
+ 
+    /**
+     * Attacks a target with the soldier's weapon.
+     *
+     * Given a target, this method performs an attack action by the soldier using their weapon.
+     *
+     * @param {string} target - The target of the attack.
+     * @returns {string} A message indicating the attack action performed by the soldier.
+     */
+    attack(target) {
+        return `${this.name} attacks the ${target} with a ${this.weapon}.`;
+    }
+}
+ 
+// Usage Example for Soldier
+ 
+const soldier = new Soldier("John", "Rifle");
+console.log(soldier.attack("enemy")); // Expected Output: "John attacks the enemy with a Rifle."
